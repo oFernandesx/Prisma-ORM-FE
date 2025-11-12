@@ -42,8 +42,8 @@ export function LoginForm({
         throw new Error(res.error.message || "Credenciais inválidas.");
       }
 
-      // Redireciona para o dashboard
-      router.push("/dashboard");
+  // Redireciona para a página principal do painel (/)
+  router.push("/");
     } catch (err: any) {
       console.error("Erro no login:", err);
       setError(err.message || "Erro ao fazer login.");

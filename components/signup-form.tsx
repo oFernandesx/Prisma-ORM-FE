@@ -35,12 +35,13 @@ export function SignupForm({
         event.preventDefault();
         setError("");
         const formData = new FormData(event.currentTarget);
+        const name = String(formData.get("name") || "");
         const email = String(formData.get("email") || "");
         const password = String(formData.get("password") || "");
         const confirmPassword = String(formData.get("confirm-password") || "");
 
-        if (!email || !password) {
-            return setError("Preencha email e senha.");
+        if (!name || !email || !password) {
+            return setError("Preencha nome, email e senha.");
         }
 
         if (password !== confirmPassword) {
@@ -50,17 +51,11 @@ export function SignupForm({
         setLoading(true);
 
         try {
-            let res: any;
-
-            // 1) Se existir submétodo `.email`, usa ele (algumas versões expõem esse método).
-            if (authClient && (authClient as any).signUp && typeof (authClient as any).signUp.email === "function") {
-                res = await (authClient as any).signUp.email({ email, password });
-            } else if (authClient && typeof (authClient as any).signUp === "function") {
-                // 2) Caso comum: signUp({ email, password })
-                res = await (authClient as any).signUp({ email, password });
-            } else {
-                throw new Error("authClient não expõe método de signUp. Verifique o createAuthClient.");
-            }
+            const res = await (authClient as any).signUp.email({ 
+                email, 
+                password,
+                name 
+            });
 
             // Log para debug (verifique o Network/Console)
             console.log("signUp response:", res);
@@ -93,9 +88,15 @@ export function SignupForm({
                             <div className="flex flex-col items-center gap-2 text-center">
                                 <h1 className="text-2xl font-bold">Create your account</h1>
                                 <p className="text-muted-foreground text-sm text-balance">
-                                    Enter your email below to create your account
+                                    Enter your details below to create your account
                                 </p>
                             </div>
+
+                            <Field>
+                                <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                                <Input id="name" name="name" type="text" placeholder="John Doe" required />
+                                <FieldDescription>Your full name</FieldDescription>
+                            </Field>
 
                             <Field>
                                 <FieldLabel htmlFor="email">Email</FieldLabel>

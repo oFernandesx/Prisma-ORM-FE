@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { authClient } from '@/lib/auth-client'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -11,13 +11,22 @@ interface ProtectedLayoutProps {
 
 export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { data: session, isPending } = authClient.useSession()
 
+  // Rotas públicas que não precisam de autenticação
+  const publicRoutes = ['/login', '/signup']
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+
   useEffect(() => {
-    if (!isPending && !session) {
-      router.push('/login')
+    if (!isPending) {
+      if (!session && !isPublicRoute) {
+        router.push('/login')
+      } else if (session && isPublicRoute) {
+        router.push('/')
+      }
     }
-  }, [session, isPending, router])
+  }, [session, isPending, router, isPublicRoute])
 
   if (isPending) {
     return (
@@ -25,10 +34,6 @@ export function ProtectedLayout({ children }: ProtectedLayoutProps) {
         <Skeleton className="h-12 w-48" />
       </div>
     )
-  }
-
-  if (!session) {
-    return null
   }
 
   return <>{children}</>
